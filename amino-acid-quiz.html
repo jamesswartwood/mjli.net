@@ -58,11 +58,54 @@
         </header>
 
         <!-- Main Menu View -->
-        <main id="menu-view" class="flex-grow w-full">
-            <h2 class="text-xl font-semibold mb-6 text-center text-gray-800">Select Challenge Level</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <!-- Level Cards will be injected here via JS -->
-            </div>
+        <main id="menu-view" class="flex-grow w-full space-y-10">
+            <!-- Quizzing Levels (1-5) -->
+            <section>
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900 academic-title">Challenge Levels</h2>
+                    <p class="text-xs text-gray-500 font-medium">Standard 20-question randomized mastery sessions with academic letter grading.</p>
+                </div>
+                <div id="levels-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <!-- Level Cards 1-5 injected here -->
+                </div>
+            </section>
+
+            <!-- Randomized Study Section -->
+            <section class="border-t border-gray-200 pt-8">
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900 academic-title">Randomized Study</h2>
+                    <p class="text-xs text-gray-500 font-medium">Single-screen recall grids for rapid code retrieval with instant structure inspection.</p>
+                </div>
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100/70 border border-gray-200 rounded-xl p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm hover:border-gray-400 transition-all">
+                    <div class="max-w-xl">
+                        <span class="inline-block px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase bg-gray-900 text-white rounded mb-2">Interactive Drill</span>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Randomized 20-Code Quick Grid</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            View all 20 amino acids on a compact, non-scrolling screen. Switch dynamically between 3-letter, 1-letter, or mixed random codes, and click any item for complete chemical and nomenclature details.
+                        </p>
+                    </div>
+                    <button id="btn-open-study" class="whitespace-nowrap bg-gray-900 text-white font-medium py-3 px-6 rounded-lg hover:bg-gray-800 active:scale-95 transition shadow-sm text-sm">
+                        Launch Study Grid &rarr;
+                    </button>
+                </div>
+            </section>
+
+            <!-- Static Appendix Section -->
+            <section class="border-t border-gray-200 pt-8 pb-4">
+                <div class="mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900 academic-title">Static Appendix</h2>
+                    <p class="text-xs text-gray-500 font-medium">Standard alphabetical reference directory of the 20 canonical amino acids.</p>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm hover:border-gray-400 transition-all">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900">Canonical Reference Appendix Table</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm mt-0.5">Complete catalog containing canonical names, 3-letter codes, 1-letter codes, and 2D chemical structures.</p>
+                    </div>
+                    <button id="btn-open-appendix" class="whitespace-nowrap bg-white text-gray-800 border border-gray-300 hover:border-gray-900 hover:bg-gray-50 font-medium py-2.5 px-5 rounded-lg transition text-sm">
+                        View Appendix Table
+                    </button>
+                </div>
+            </section>
         </main>
 
         <!-- Quiz View -->
@@ -137,23 +180,67 @@
             </div>
         </main>
 
-        <!-- Randomized Amino Acid Codes & Structures View -->
-        <main id="table-view" class="flex-grow w-full hidden-view flex flex-col">
+        <!-- Randomized Study Grid View (Single Screen, No Scrolling) -->
+        <main id="study-view" class="flex-grow w-full hidden-view flex flex-col max-w-4xl mx-auto">
+            <!-- Study Top Navigation & Controls -->
+            <div class="flex flex-col gap-4 mb-4 pb-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <button id="btn-study-back" class="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center transition bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        Main Menu
+                    </button>
+                    <div class="text-center">
+                        <h2 class="academic-title text-lg sm:text-xl font-bold text-gray-900">Randomized Study Grid</h2>
+                        <p class="text-xs text-gray-500 font-medium hidden sm:block">Click any tile to inspect full nomenclature and chemical structure</p>
+                    </div>
+                    <button id="btn-study-reshuffle" class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900 px-3 py-1.5 rounded-lg transition font-medium text-xs border border-gray-300 active:scale-95">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reshuffle
+                    </button>
+                </div>
+
+                <!-- 3 Interactive Modes Toolbar -->
+                <div class="flex items-center justify-center">
+                    <div class="inline-flex bg-gray-100 p-1 rounded-xl border border-gray-200 w-full sm:w-auto shadow-inner text-xs sm:text-sm font-medium">
+                        <button id="mode-btn-three" class="study-mode-tab flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all font-semibold bg-gray-900 text-white shadow-sm">
+                            1. 3-Letter Codes
+                        </button>
+                        <button id="mode-btn-one" class="study-mode-tab flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all font-semibold text-gray-600 hover:text-gray-900">
+                            2. 1-Letter Codes
+                        </button>
+                        <button id="mode-btn-mixed" class="study-mode-tab flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all font-semibold text-gray-600 hover:text-gray-900">
+                            3. Mixed (1 &amp; 3-Letter)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compact Single-Page Grid (Designed to fit 20 items on one screen) -->
+            <div class="flex-grow flex items-center justify-center py-1">
+                <div id="study-grid" class="grid grid-cols-4 sm:grid-cols-5 gap-2.5 sm:gap-3.5 w-full max-w-3xl">
+                    <!-- 20 Randomized Tiles Injected via JS -->
+                </div>
+            </div>
+            
+            <p class="text-center text-[11px] text-gray-400 mt-2 sm:mt-4">
+                Tip: Click any code tile to reveal its identity and 2D chemical structure.
+            </p>
+        </main>
+
+        <!-- Static Appendix Table View -->
+        <main id="appendix-view" class="flex-grow w-full hidden-view flex flex-col">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-200">
-                <button id="btn-table-back" class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center transition bg-gray-100 hover:bg-gray-200 px-3.5 py-2 rounded-lg border border-gray-200">
+                <button id="btn-appendix-back" class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center transition bg-gray-100 hover:bg-gray-200 px-3.5 py-2 rounded-lg border border-gray-200">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     Main Menu
                 </button>
                 <div class="text-left sm:text-center">
-                    <h2 class="academic-title text-xl sm:text-2xl font-bold text-gray-900">Randomized Amino Acid Codes</h2>
-                    <p class="text-xs text-gray-500 font-medium mt-0.5">All 20 canonical amino acids displayed in randomized sequence for recall verification</p>
+                    <h2 class="academic-title text-xl sm:text-2xl font-bold text-gray-900">Appendix: Amino Acid Directory</h2>
+                    <p class="text-xs text-gray-500 font-medium mt-0.5">Static reference table of the 20 canonical amino acids arranged alphabetically</p>
                 </div>
-                <button id="btn-shuffle-table" class="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition font-medium text-sm shadow-sm active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                    </svg>
-                    Re-Randomize Order
-                </button>
+                <div class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 border border-gray-200">
+                    20 Canonical Structures
+                </div>
             </div>
 
             <!-- Table Container -->
@@ -163,14 +250,14 @@
                         <thead>
                             <tr class="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider">
                                 <th scope="col" class="py-3 px-4 text-center w-12 text-gray-400">#</th>
-                                <th scope="col" class="py-3 px-6">Name</th>
-                                <th scope="col" class="py-3 px-4 text-center">3-Letter Code</th>
-                                <th scope="col" class="py-3 px-4 text-center">1-Letter Code</th>
-                                <th scope="col" class="py-3 px-6 text-center w-44">2D Chemical Structure</th>
+                                <th scope="col" class="py-3 px-6">Canonical Name</th>
+                                <th scope="col" class="py-3 px-4 text-center">3-Letter</th>
+                                <th scope="col" class="py-3 px-4 text-center">1-Letter</th>
+                                <th scope="col" class="py-3 px-6 text-center w-48">2D Chemical Structure</th>
                             </tr>
                         </thead>
-                        <tbody id="amino-table-body" class="divide-y divide-gray-200 text-sm">
-                            <!-- Injected rows will appear here -->
+                        <tbody id="appendix-table-body" class="divide-y divide-gray-200 text-sm">
+                            <!-- Appendix rows injected here -->
                         </tbody>
                     </table>
                 </div>
@@ -180,6 +267,49 @@
         <footer class="mt-8 text-center text-xs text-gray-400 py-4">
             Designed for rigorous academic assessment. Built for biomedicine.
         </footer>
+    </div>
+
+    <!-- Amino Acid Detail Modal -->
+    <div id="aa-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs transition-opacity duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <span class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Amino Acid Details</span>
+                <button id="btn-modal-close" class="text-gray-400 hover:text-gray-700 p-1 rounded-md transition focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 text-center flex flex-col items-center">
+                <h3 id="modal-name" class="academic-title text-2xl font-bold text-gray-900 mb-2">Alanine</h3>
+                
+                <!-- Codes Badges -->
+                <div class="flex items-center justify-center gap-3 mb-5">
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 mb-0.5">3-Letter</span>
+                        <span id="modal-three" class="px-3 py-1 bg-gray-100 text-gray-800 font-mono font-bold text-sm rounded border border-gray-200">Ala</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] uppercase font-bold text-gray-400 mb-0.5">1-Letter</span>
+                        <span id="modal-one" class="w-8 h-8 flex items-center justify-center bg-gray-900 text-white font-mono font-bold text-sm rounded-full shadow-xs">A</span>
+                    </div>
+                </div>
+
+                <!-- 2D Structure Canvas -->
+                <div class="w-full flex flex-col items-center justify-center p-3 bg-white border border-gray-200 rounded-xl mb-4 shadow-inner min-h-[220px]">
+                    <span class="text-[11px] text-gray-400 font-medium mb-1">2D Chemical Structure</span>
+                    <canvas id="modal-canvas" width="240" height="190" class="max-w-full h-auto"></canvas>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-right">
+                <button id="btn-modal-dismiss" class="bg-gray-900 text-white text-xs font-semibold py-2 px-5 rounded-lg hover:bg-gray-800 transition">
+                    Done
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -211,17 +341,11 @@
         ];
 
         const levels = [
-            { id: 1, title: "Level 1: Code to Name", desc: "Associate a provided 1 or 3-letter code with its correct full name." },
-            { id: 2, title: "Level 2: Name to Code", desc: "Given the full name, identify the correct 1 or 3-letter code." },
+            { id: 1, title: "Level 1: Code to Name", desc: "Associate a provided 1 or 3-letter code with its correct full canonical name." },
+            { id: 2, title: "Level 2: Name to Code", desc: "Given the canonical name, identify the correct 1 or 3-letter code." },
             { id: 3, title: "Level 3: 1-Letter to 3-Letter", desc: "Translate a 1-letter code directly to its 3-letter counterpart." },
             { id: 4, title: "Level 4: 3-Letter to 1-Letter", desc: "Translate a 3-letter code directly to its 1-letter counterpart." },
-            { id: 5, title: "Level 5: Structure to Code", desc: "Identify the amino acid by analyzing its 2D chemical structure." },
-            { 
-                id: 'table', 
-                title: "Randomized Amino Acid Codes", 
-                desc: "Interactive reference table of all 20 amino acids with Name, 3-letter, 1-letter codes, and chemical structures. Re-randomize order on demand.", 
-                isTable: true 
-            }
+            { id: 5, title: "Level 5: Structure to Code", desc: "Identify the amino acid code by analyzing its 2D chemical structure." }
         ];
 
         let state = {
@@ -229,7 +353,9 @@
             score: 0,
             questionQueue: [],
             currentIndex: 0,
-            questionData: null
+            questionData: null,
+            studyMode: 'three', // 'three' | 'one' | 'mixed'
+            studyItems: []
         };
 
         // DOM Elements
@@ -237,9 +363,14 @@
             menu: document.getElementById('menu-view'),
             quiz: document.getElementById('quiz-view'),
             results: document.getElementById('results-view'),
-            table: document.getElementById('table-view')
+            study: document.getElementById('study-view'),
+            appendix: document.getElementById('appendix-view')
         };
         const els = {
+            levelsGrid: document.getElementById('levels-grid'),
+            btnOpenStudy: document.getElementById('btn-open-study'),
+            btnOpenAppendix: document.getElementById('btn-open-appendix'),
+            // Quiz elements
             levelTitle: document.getElementById('quiz-level-title'),
             progress: document.getElementById('quiz-progress'),
             score: document.getElementById('quiz-score'),
@@ -252,7 +383,6 @@
             feedbackMsg: document.getElementById('feedback-message'),
             btnNext: document.getElementById('btn-next'),
             btnBack: document.getElementById('btn-back'),
-            menuGrid: document.querySelector('#menu-view .grid'),
             // Results screen elements
             resultGradeBadge: document.getElementById('result-grade-badge'),
             resultTitle: document.getElementById('result-title'),
@@ -262,10 +392,24 @@
             resultEvaluation: document.getElementById('result-evaluation'),
             btnResultMenu: document.getElementById('btn-result-menu'),
             btnResultRetry: document.getElementById('btn-result-retry'),
-            // Table view elements
-            tableBody: document.getElementById('amino-table-body'),
-            btnTableBack: document.getElementById('btn-table-back'),
-            btnShuffleTable: document.getElementById('btn-shuffle-table')
+            // Study Grid elements
+            btnStudyBack: document.getElementById('btn-study-back'),
+            btnStudyReshuffle: document.getElementById('btn-study-reshuffle'),
+            studyGrid: document.getElementById('study-grid'),
+            modeBtnThree: document.getElementById('mode-btn-three'),
+            modeBtnOne: document.getElementById('mode-btn-one'),
+            modeBtnMixed: document.getElementById('mode-btn-mixed'),
+            // Appendix View elements
+            btnAppendixBack: document.getElementById('btn-appendix-back'),
+            appendixTableBody: document.getElementById('appendix-table-body'),
+            // Modal elements
+            modal: document.getElementById('aa-modal'),
+            modalClose: document.getElementById('btn-modal-close'),
+            modalDismiss: document.getElementById('btn-modal-dismiss'),
+            modalName: document.getElementById('modal-name'),
+            modalThree: document.getElementById('modal-three'),
+            modalOne: document.getElementById('modal-one'),
+            modalCanvas: document.getElementById('modal-canvas')
         };
 
         // Standard academic grading scale
@@ -312,7 +456,7 @@
                 const drawer = new SmiDrawer({
                     width: width,
                     height: height,
-                    padding: 6,
+                    padding: 8,
                     themes: {
                         light: {
                             C: '#111827', O: '#ef4444', N: '#2563eb', S: '#d97706', 
@@ -330,24 +474,48 @@
         }
 
         function initApp() {
-            renderMenu();
+            renderLevelsMenu();
+            renderAppendixTable();
             
-            // Global listeners
+            // Global view listeners
             els.btnBack.addEventListener('click', () => showView('menu'));
             els.btnNext.addEventListener('click', handleNextAction);
             els.btnResultMenu.addEventListener('click', () => showView('menu'));
             els.btnResultRetry.addEventListener('click', () => startLevel(state.currentLevel));
             
-            // Randomized Table listeners
-            els.btnTableBack.addEventListener('click', () => showView('menu'));
-            els.btnShuffleTable.addEventListener('click', renderRandomizedTable);
+            // Section triggers on Menu
+            els.btnOpenStudy.addEventListener('click', openStudyView);
+            els.btnOpenAppendix.addEventListener('click', () => showView('appendix'));
+
+            // Study view controls
+            els.btnStudyBack.addEventListener('click', () => showView('menu'));
+            els.btnStudyReshuffle.addEventListener('click', () => renderStudyGrid(state.studyMode));
+            els.modeBtnThree.addEventListener('click', () => setStudyMode('three'));
+            els.modeBtnOne.addEventListener('click', () => setStudyMode('one'));
+            els.modeBtnMixed.addEventListener('click', () => setStudyMode('mixed'));
+
+            // Appendix controls
+            els.btnAppendixBack.addEventListener('click', () => showView('menu'));
+
+            // Modal events
+            els.modalClose.addEventListener('click', closeAAModal);
+            els.modalDismiss.addEventListener('click', closeAAModal);
+            els.modal.addEventListener('click', (e) => {
+                if (e.target === els.modal) closeAAModal();
+            });
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !els.modal.classList.contains('hidden')) {
+                    closeAAModal();
+                }
+            });
         }
 
         function showView(viewName) {
             views.menu.classList.add('hidden-view');
             views.quiz.classList.add('hidden-view');
             views.results.classList.add('hidden-view');
-            views.table.classList.add('hidden-view');
+            views.study.classList.add('hidden-view');
+            views.appendix.classList.add('hidden-view');
 
             if (viewName === 'menu') {
                 views.menu.classList.remove('hidden-view');
@@ -357,60 +525,137 @@
                 views.quiz.classList.remove('hidden-view');
             } else if (viewName === 'results') {
                 views.results.classList.remove('hidden-view');
-            } else if (viewName === 'table') {
-                views.table.classList.remove('hidden-view');
+            } else if (viewName === 'study') {
+                views.study.classList.remove('hidden-view');
+            } else if (viewName === 'appendix') {
+                views.appendix.classList.remove('hidden-view');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        function renderMenu() {
-            els.menuGrid.innerHTML = '';
+        function renderLevelsMenu() {
+            els.levelsGrid.innerHTML = '';
             levels.forEach(level => {
                 const card = document.createElement('div');
-                const isSpecial = level.isTable;
-                card.className = `border rounded-lg p-6 bg-white hover:border-gray-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between ${isSpecial ? 'border-blue-200 bg-blue-50/20' : 'border-gray-200'}`;
-                
-                const badge = isSpecial ? '<span class="inline-block px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase bg-blue-100 text-blue-800 rounded mb-2">Interactive Study Mode</span>' : '';
-                const btnText = isSpecial ? 'Open Reference Table' : 'Start Level';
-                const btnClass = isSpecial 
-                    ? 'bg-blue-600 text-white font-medium py-2 px-4 rounded hover:bg-blue-700 transition-colors' 
-                    : 'bg-gray-50 text-gray-800 border border-gray-200 font-medium py-2 px-4 rounded hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors';
-
+                card.className = "border border-gray-200 rounded-xl p-5 sm:p-6 bg-white hover:border-gray-900 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between";
                 card.innerHTML = `
                     <div>
-                        ${badge}
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">${level.title}</h3>
-                        <p class="text-gray-600 text-sm mb-4 leading-relaxed">${level.desc}</p>
+                        <span class="text-[11px] font-bold tracking-wider text-gray-400 uppercase">Assessment</span>
+                        <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-1.5 mt-0.5">${level.title}</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm mb-4 leading-relaxed">${level.desc}</p>
                     </div>
-                    <button class="w-full ${btnClass}">
-                        ${btnText}
+                    <button class="w-full bg-gray-50 text-gray-800 border border-gray-200 font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors text-xs sm:text-sm">
+                        Start Level &rarr;
                     </button>
                 `;
-                card.addEventListener('click', () => {
-                    if (level.isTable) {
-                        openTableView();
-                    } else {
-                        startLevel(level.id);
-                    }
-                });
-                els.menuGrid.appendChild(card);
+                card.addEventListener('click', () => startLevel(level.id));
+                els.levelsGrid.appendChild(card);
             });
         }
 
-        function openTableView() {
-            showView('table');
-            renderRandomizedTable();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        // ==================== RANDOMIZED STUDY MODE ====================
+
+        function openStudyView() {
+            showView('study');
+            setStudyMode('three');
         }
 
-        function renderRandomizedTable() {
-            const shuffledAcids = shuffle([...aminoAcids]);
-            els.tableBody.innerHTML = '';
+        function setStudyMode(mode) {
+            state.studyMode = mode;
+            
+            // Update Tab UI
+            const modeTabs = [
+                { id: 'three', btn: els.modeBtnThree },
+                { id: 'one', btn: els.modeBtnOne },
+                { id: 'mixed', btn: els.modeBtnMixed }
+            ];
 
-            shuffledAcids.forEach((aa, index) => {
+            modeTabs.forEach(item => {
+                if (item.id === mode) {
+                    item.btn.className = "study-mode-tab flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all font-semibold bg-gray-900 text-white shadow-sm";
+                } else {
+                    item.btn.className = "study-mode-tab flex-1 sm:flex-none px-4 py-2 rounded-lg transition-all font-semibold text-gray-600 hover:text-gray-900";
+                }
+            });
+
+            renderStudyGrid(mode);
+        }
+
+        function renderStudyGrid(mode) {
+            els.studyGrid.innerHTML = '';
+            
+            // Generate randomized items
+            const shuffled = shuffle([...aminoAcids]);
+            state.studyItems = shuffled.map(aa => {
+                let displayCode = "";
+                let codeType = "";
+                
+                if (mode === 'three') {
+                    displayCode = aa.three;
+                    codeType = "3-Letter";
+                } else if (mode === 'one') {
+                    displayCode = aa.one;
+                    codeType = "1-Letter";
+                } else {
+                    // Mixed mode: randomly decide 1 or 3 letter
+                    const isThree = Math.random() > 0.5;
+                    displayCode = isThree ? aa.three : aa.one;
+                    codeType = isThree ? "3-Letter" : "1-Letter";
+                }
+
+                return {
+                    aminoAcid: aa,
+                    code: displayCode,
+                    type: codeType
+                };
+            });
+
+            // Populate compact grid (20 items fitting neatly on one screen)
+            state.studyItems.forEach((item) => {
+                const tile = document.createElement('button');
+                const isSingleLetter = item.code.length === 1;
+
+                tile.className = "group flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border border-gray-200 bg-white hover:border-gray-900 hover:bg-gray-50/80 hover:shadow-md active:scale-95 transition-all text-center focus:outline-none min-h-[64px] sm:min-h-[78px]";
+                
+                tile.innerHTML = `
+                    <span class="font-mono ${isSingleLetter ? 'text-2xl sm:text-3xl font-extrabold text-gray-900' : 'text-lg sm:text-xl font-bold text-gray-800'} tracking-tight group-hover:scale-105 transition-transform">
+                        ${item.code}
+                    </span>
+                    <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wider mt-0.5">${item.type}</span>
+                `;
+
+                tile.addEventListener('click', () => openAAModal(item.aminoAcid));
+                els.studyGrid.appendChild(tile);
+            });
+        }
+
+        function openAAModal(aa) {
+            els.modalName.textContent = aa.name;
+            els.modalThree.textContent = aa.three;
+            els.modalOne.textContent = aa.one;
+            
+            els.modal.classList.remove('hidden');
+            setTimeout(() => {
+                drawMolecule(aa.smiles, 'modal-canvas', 240, 190);
+            }, 30);
+        }
+
+        function closeAAModal() {
+            els.modal.classList.add('hidden');
+        }
+
+        // ==================== STATIC APPENDIX TABLE ====================
+
+        function renderAppendixTable() {
+            // Sort canonical list systematically (alphabetical by name)
+            const sortedAcids = [...aminoAcids].sort((a, b) => a.name.localeCompare(b.name));
+            els.appendixTableBody.innerHTML = '';
+
+            sortedAcids.forEach((aa, index) => {
                 const tr = document.createElement('tr');
                 tr.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/50 hover:bg-gray-50';
                 
-                const canvasId = `table-canvas-${index}`;
+                const canvasId = `appendix-canvas-${index}`;
                 tr.innerHTML = `
                     <td class="py-3 px-4 text-center font-mono text-xs text-gray-400">${index + 1}</td>
                     <td class="py-3 px-6 font-semibold text-gray-900">${aa.name}</td>
@@ -428,12 +673,13 @@
                         <canvas id="${canvasId}" width="140" height="90" class="max-w-full h-auto"></canvas>
                     </td>
                 `;
-                els.tableBody.appendChild(tr);
+                els.appendixTableBody.appendChild(tr);
 
-                // Asynchronously draw the molecule onto the row's canvas
                 setTimeout(() => drawMolecule(aa.smiles, canvasId, 140, 90), 10);
             });
         }
+
+        // ==================== QUIZ SYSTEM (LEVELS 1-5) ====================
 
         function startLevel(levelId) {
             state.currentLevel = levelId;
