@@ -94,9 +94,12 @@
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     Menu
                 </button>
-                <div class="text-center font-medium text-gray-800" id="quiz-level-title">Level X</div>
+                <div class="text-center">
+                    <div class="font-medium text-gray-800 text-sm sm:text-base" id="quiz-level-title">Level X</div>
+                    <div class="text-xs text-gray-500 font-medium" id="quiz-progress">Question 1 of 20</div>
+                </div>
                 <div class="text-sm font-semibold bg-gray-100 px-3 py-1 rounded-full text-gray-700">
-                    Score: <span id="quiz-score">0</span>
+                    Score: <span id="quiz-score">0</span> / <span id="quiz-total">20</span>
                 </div>
             </div>
 
@@ -156,6 +159,32 @@
             </div>
         </main>
 
+        <!-- Results Assessment View -->
+        <main id="results-view" class="flex-grow w-full hidden-view flex flex-col items-center justify-center py-6">
+            <div class="bg-white border border-gray-200 rounded-2xl p-8 sm:p-12 w-full max-w-lg shadow-sm text-center flex flex-col items-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-900 text-white font-extrabold text-3xl mb-6 shadow-inner tracking-tight" id="result-grade-badge">
+                    --
+                </div>
+                <h2 id="result-title" class="academic-title text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Session Complete</h2>
+                <p id="result-subtitle" class="text-xs uppercase tracking-widest text-gray-400 font-semibold mb-6">Performance Assessment</p>
+                
+                <div class="border-y border-gray-100 py-6 my-2 w-full">
+                    <div id="result-percentage" class="text-5xl font-black text-gray-900 mb-2">0%</div>
+                    <div id="result-summary" class="text-sm font-medium text-gray-600 mb-1">0 of 20 Questions Correct</div>
+                    <div id="result-evaluation" class="text-sm font-semibold text-gray-800 italic">Evaluating performance...</div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 w-full mt-6">
+                    <button id="btn-result-retry" class="flex-1 bg-gray-900 text-white font-medium py-3 px-5 rounded-lg hover:bg-gray-800 transition shadow-sm text-sm">
+                        Try Again
+                    </button>
+                    <button id="btn-result-menu" class="flex-1 bg-gray-100 text-gray-700 font-medium py-3 px-5 rounded-lg hover:bg-gray-200 border border-gray-200 transition text-sm">
+                        Main Menu
+                    </button>
+                </div>
+            </div>
+        </main>
+
         <footer class="mt-8 text-center text-xs text-gray-400 py-4">
             Designed for rigorous academic assessment. Built for biomedicine.
         </footer>
@@ -206,6 +235,8 @@
         let state = {
             currentLevel: null,
             score: 0,
+            questionQueue: [],
+            currentIndex: 0,
             questionData: null,
             drawer: null // Holds the SmilesDrawer instance
         };
@@ -213,11 +244,14 @@
         // DOM Elements
         const views = {
             menu: document.getElementById('menu-view'),
-            quiz: document.getElementById('quiz-view')
+            quiz: document.getElementById('quiz-view'),
+            results: document.getElementById('results-view')
         };
         const els = {
             levelTitle: document.getElementById('quiz-level-title'),
+            progress: document.getElementById('quiz-progress'),
             score: document.getElementById('quiz-score'),
+            scoreTotal: document.getElementById('quiz-total'),
             promptText: document.getElementById('prompt-text'),
             promptCanvasContainer: document.getElementById('prompt-canvas-container'),
             promptCanvas: document.getElementById('prompt-canvas'),
@@ -232,10 +266,33 @@
             dropZone: document.getElementById('drop-zone'),
             backboneCanvas: document.getElementById('backbone-canvas'),
             dropSuccessOverlay: document.getElementById('drop-success-overlay'),
-            dragGhost: document.getElementById('drag-ghost')
+            dragGhost: document.getElementById('drag-ghost'),
+            // Results screen elements
+            resultGradeBadge: document.getElementById('result-grade-badge'),
+            resultTitle: document.getElementById('result-title'),
+            resultSubtitle: document.getElementById('result-subtitle'),
+            resultPercentage: document.getElementById('result-percentage'),
+            resultSummary: document.getElementById('result-summary'),
+            resultEvaluation: document.getElementById('result-evaluation'),
+            btnResultMenu: document.getElementById('btn-result-menu'),
+            btnResultRetry: document.getElementById('btn-result-retry')
         };
 
-        
+        // Standard academic grading scale
+        function getGrade(percentage) {
+            if (percentage >= 97) return { grade: "A+", label: "Outstanding Academic Mastery" };
+            if (percentage >= 93) return { grade: "A", label: "Superior Performance" };
+            if (percentage >= 90) return { grade: "A-", label: "Very Good Performance" };
+            if (percentage >= 87) return { grade: "B+", label: "Good Performance" };
+            if (percentage >= 83) return { grade: "B", label: "Above Average Mastery" };
+            if (percentage >= 80) return { grade: "B-", label: "Competent Understanding" };
+            if (percentage >= 77) return { grade: "C+", label: "Acceptable Performance" };
+            if (percentage >= 73) return { grade: "C", label: "Basic Comprehension (Review Recommended)" };
+            if (percentage >= 70) return { grade: "C-", label: "Remediation Needed" };
+            if (percentage >= 60) return { grade: "D", label: "Unsatisfactory Mastery" };
+            return { grade: "F", label: "Fail - Repeat Practice Session" };
+        }
+
         // Fisher-Yates Shuffle
         function shuffle(array) {
             let currentIndex = array.length, randomIndex;
@@ -291,21 +348,27 @@
             
             // Global listeners
             els.btnBack.addEventListener('click', () => showView('menu'));
-            els.btnNext.addEventListener('click', generateQuestion);
+            els.btnNext.addEventListener('click', handleNextAction);
+            els.btnResultMenu.addEventListener('click', () => showView('menu'));
+            els.btnResultRetry.addEventListener('click', () => startLevel(state.currentLevel));
             
             // Initialize touch/mouse drag handlers for Level 6
             setupDragAndDrop();
         }
 
         function showView(viewName) {
+            views.menu.classList.add('hidden-view');
+            views.quiz.classList.add('hidden-view');
+            views.results.classList.add('hidden-view');
+
             if (viewName === 'menu') {
                 views.menu.classList.remove('hidden-view');
-                views.quiz.classList.add('hidden-view');
                 state.currentLevel = null;
                 state.score = 0;
             } else if (viewName === 'quiz') {
-                views.menu.classList.add('hidden-view');
                 views.quiz.classList.remove('hidden-view');
+            } else if (viewName === 'results') {
+                views.results.classList.remove('hidden-view');
             }
         }
 
@@ -332,6 +395,12 @@
         function startLevel(levelId) {
             state.currentLevel = levelId;
             state.score = 0;
+            state.currentIndex = 0;
+
+            // In Level 6, Proline is cyclized to the amine backbone, making R-chain detachment unique
+            const pool = levelId === 6 ? aminoAcids.filter(a => !a.noAssembly) : [...aminoAcids];
+            state.questionQueue = shuffle([...pool]);
+
             els.levelTitle.textContent = levels.find(l => l.id === levelId).title;
             updateScoreDisplay();
             showView('quiz');
@@ -339,10 +408,39 @@
         }
 
         function updateScoreDisplay() {
+            const total = state.questionQueue.length;
             els.score.textContent = state.score;
+            els.scoreTotal.textContent = total;
+            const currentNum = Math.min(state.currentIndex + 1, total);
+            els.progress.textContent = `Question ${currentNum} of ${total}`;
+        }
+
+        function handleNextAction() {
+            state.currentIndex++;
+            if (state.currentIndex < state.questionQueue.length) {
+                generateQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            showView('results');
+            const total = state.questionQueue.length;
+            const pct = Math.round((state.score / total) * 100);
+            const evaluation = getGrade(pct);
+
+            const levelInfo = levels.find(l => l.id === state.currentLevel);
+            els.resultTitle.textContent = `${levelInfo.title} Complete`;
+            els.resultGradeBadge.textContent = evaluation.grade;
+            els.resultPercentage.textContent = `${pct}%`;
+            els.resultSummary.textContent = `${state.score} of ${total} Questions Correct`;
+            els.resultEvaluation.textContent = evaluation.label;
         }
 
         function generateQuestion() {
+            updateScoreDisplay();
+
             // Reset UI states
             els.optionsArea.innerHTML = '';
             els.draggablePool.innerHTML = '';
@@ -360,7 +458,7 @@
             els.draggablePool.style.pointerEvents = 'auto';
 
             const level = state.currentLevel;
-            const target = aminoAcids[Math.floor(Math.random() * aminoAcids.length)];
+            const target = state.questionQueue[state.currentIndex];
             let promptText = "";
             let options = [];
             let correctOption = "";
@@ -395,12 +493,11 @@
                     correctOption = useThree5 ? target.three : target.one;
                     options = getRandomItems(aminoAcids, 3, target).map(a => useThree5 ? a.three : a.one);
                     els.promptCanvasContainer.classList.remove('hidden');
-                    // Delay slightly to ensure layout is done before drawing
                     setTimeout(() => drawMolecule(target.smiles, 'prompt-canvas'), 10);
                     break;
                 case 6: // Assembly
-                    generateAssemblyQuestion();
-                    return; // Short circuit as logic is vastly different
+                    generateAssemblyQuestion(target);
+                    return;
             }
 
             // Standard multiple choice setup
@@ -420,19 +517,15 @@
             });
         }
 
-
-        function generateAssemblyQuestion() {
+        function generateAssemblyQuestion(target) {
             els.optionsArea.classList.add('hidden-view');
             els.dndArea.classList.remove('hidden');
             
-            // Exclude Proline for clean drag-and-drop mechanics due to cyclical structure
             const validAcids = aminoAcids.filter(a => !a.noAssembly);
-            const target = validAcids[Math.floor(Math.random() * validAcids.length)];
             
             els.promptText.textContent = `Construct ${target.name} (${target.three})`;
             
             // Draw common backbone on the drop target
-            // SMILES for backbone with a clear attachment asterisk: NC(*)C(=O)O
             setTimeout(() => drawMolecule('NC(*)C(=O)O', 'backbone-canvas', 200, 150), 10);
             
             // Setup Draggable Pool
@@ -448,7 +541,6 @@
                 dItem.className = "draggable-item bg-white border border-gray-200 rounded-lg p-2 cursor-grab hover:border-gray-400 hover:shadow-sm flex justify-center items-center h-24 touch-none transition-transform";
                 dItem.innerHTML = `<canvas id="${cid}" width="100" height="80" class="max-w-full max-h-full object-contain"></canvas>`;
                 
-                // Attach metadata for evaluation
                 dItem.dataset.name = aa.name;
                 dItem.dataset.smiles = aa.r_smiles;
                 
@@ -456,7 +548,6 @@
                 
                 setTimeout(() => drawMolecule(aa.r_smiles, cid, 100, 80), 10);
                 
-                // Add custom drag events
                 attachDragEvents(dItem);
             });
         }
@@ -609,10 +700,12 @@
                 updateScoreDisplay();
                 els.feedbackMsg.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
             } else {
-                state.score = 0; // Reset streak on error (academic rigor)
                 updateScoreDisplay();
                 els.feedbackMsg.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
             }
+
+            const isLastQuestion = state.currentIndex + 1 >= state.questionQueue.length;
+            els.btnNext.textContent = isLastQuestion ? "View Final Assessment" : "Continue to Next";
             
             // Scroll to next button on mobile
             setTimeout(() => els.btnNext.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
