@@ -62,7 +62,7 @@
             <!-- Quizzing Levels (1-5) -->
             <section>
                 <div class="mb-4">
-                    <h2 class="text-xl font-semibold text-gray-900 academic-title">Challenge Levels</h2>
+                    <h2 class="text-xl font-semibold text-gray-900 academic-title">Amino Acid Quizzes</h2>
                     <p class="text-xs text-gray-500 font-medium">Standard 20-question randomized mastery sessions with academic letter grading.</p>
                 </div>
                 <div id="levels-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -74,7 +74,6 @@
             <section class="border-t border-gray-200 pt-8">
                 <div class="mb-4">
                     <h2 class="text-xl font-semibold text-gray-900 academic-title">Randomized Study</h2>
-                    <p class="text-xs text-gray-500 font-medium">Single-screen recall grids for rapid code retrieval with instant structure inspection.</p>
                 </div>
                 <div class="bg-gradient-to-br from-gray-50 to-gray-100/70 border border-gray-200 rounded-xl p-6 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm hover:border-gray-400 transition-all">
                     <div class="max-w-xl">
@@ -93,13 +92,13 @@
             <!-- Static Appendix Section -->
             <section class="border-t border-gray-200 pt-8 pb-4">
                 <div class="mb-4">
-                    <h2 class="text-xl font-semibold text-gray-900 academic-title">Static Appendix</h2>
-                    <p class="text-xs text-gray-500 font-medium">Standard alphabetical reference directory of the 20 canonical amino acids.</p>
+                    <h2 class="text-xl font-semibold text-gray-900 academic-title">Appendix</h2>
+                    <p class="text-xs text-gray-500 font-medium">Alphabetical reference directory of the 20 amino acids.</p>
                 </div>
                 <div class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm hover:border-gray-400 transition-all">
                     <div>
-                        <h3 class="text-base font-bold text-gray-900">Canonical Reference Appendix Table</h3>
-                        <p class="text-gray-600 text-xs sm:text-sm mt-0.5">Complete catalog containing canonical names, 3-letter codes, 1-letter codes, and 2D chemical structures.</p>
+                        <h3 class="text-base font-bold text-gray-900">Reference Appendix Table</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm mt-0.5">Complete catalog containing names, 3-letter codes, 1-letter codes, and 2D chemical structures.</p>
                     </div>
                     <button id="btn-open-appendix" class="whitespace-nowrap bg-white text-gray-800 border border-gray-300 hover:border-gray-900 hover:bg-gray-50 font-medium py-2.5 px-5 rounded-lg transition text-sm">
                         View Appendix Table
@@ -341,11 +340,11 @@
         ];
 
         const levels = [
-            { id: 1, title: "Level 1: Code to Name", desc: "Associate a provided 1 or 3-letter code with its correct full canonical name." },
-            { id: 2, title: "Level 2: Name to Code", desc: "Given the canonical name, identify the correct 1 or 3-letter code." },
-            { id: 3, title: "Level 3: 1-Letter to 3-Letter", desc: "Translate a 1-letter code directly to its 3-letter counterpart." },
-            { id: 4, title: "Level 4: 3-Letter to 1-Letter", desc: "Translate a 3-letter code directly to its 1-letter counterpart." },
-            { id: 5, title: "Level 5: Structure to Code", desc: "Identify the amino acid code by analyzing its 2D chemical structure." }
+            { id: 1, title: "1: Code to Name", desc: "Associate a provided 1 or 3-letter code with its correct full canonical name." },
+            { id: 2, title: "2: Name to Code", desc: "Given the canonical name, identify the correct 1 or 3-letter code." },
+            { id: 3, title: "3: 1-Letter to 3-Letter", desc: "Translate a 1-letter code directly to its 3-letter counterpart." },
+            { id: 4, title: "4: 3-Letter to 1-Letter", desc: "Translate a 3-letter code directly to its 1-letter counterpart." },
+            { id: 5, title: "5: Structure to Code", desc: "Identify the amino acid code by analyzing its 2D chemical structure." }
         ];
 
         let state = {
@@ -545,7 +544,7 @@
                         <p class="text-gray-600 text-xs sm:text-sm mb-4 leading-relaxed">${level.desc}</p>
                     </div>
                     <button class="w-full bg-gray-50 text-gray-800 border border-gray-200 font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors text-xs sm:text-sm">
-                        Start Level &rarr;
+                        Start Quiz &rarr;
                     </button>
                 `;
                 card.addEventListener('click', () => startLevel(level.id));
