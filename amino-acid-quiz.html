@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Amino Acid Mastery</title>
+    
+    <!-- Tailwind CSS for robust, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SmilesDrawer for rendering chemical structures from SMILES strings -->
+    <script src="https://unpkg.com/smiles-drawer@2.0.1/dist/smiles-drawer.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #111827; /* Gray 900 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1, h2, h3, .academic-title {
+            font-family: 'Merriweather', serif;
+        }
+
+        /* Custom utility for hiding elements gracefully */
+        .hidden-view {
+            display: none !important;
+        }
+
+        /* Styling for the drag-and-drop ghost element */
+        #drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.9;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 0.375rem;
+            background: white;
+            transition: transform 0.05s linear;
+        }
+
+        /* Options grid styling */
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Standard canvas settings for crispness */
+        canvas {
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+
+        /* Dropzone animations */
+        .dropzone-active {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+    <div id="app" class="w-full max-w-4xl mx-auto flex flex-col flex-grow">
+        
+        <!-- Header -->
+        <header class="text-center mb-8 sm:mb-12 border-b border-gray-200 pb-6">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-2">Amino Acid Mastery</h1>
+            <p class="text-gray-500 font-light text-sm sm:text-base">Comprehensive structural and functional quizzing for biomedicine.</p>
+        </header>
+
+        <!-- Main Menu View -->
+        <main id="menu-view" class="flex-grow w-full">
+            <h2 class="text-xl font-semibold mb-6 text-center text-gray-800">Select Challenge Level</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <!-- Level Cards will be injected here via JS -->
+            </div>
+        </main>
+
+        <!-- Quiz View -->
+        <main id="quiz-view" class="flex-grow w-full hidden-view flex flex-col">
+            
+            <!-- Quiz Header (Level info, Score, Back button) -->
+            <div class="flex justify-between items-center mb-6">
+                <button id="btn-back" class="text-sm text-gray-600 hover:text-gray-900 flex items-center transition">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    Menu
+                </button>
+                <div class="text-center font-medium text-gray-800" id="quiz-level-title">Level X</div>
+                <div class="text-sm font-semibold bg-gray-100 px-3 py-1 rounded-full text-gray-700">
+                    Score: <span id="quiz-score">0</span>
+                </div>
+            </div>
+
+            <!-- Quiz Content Container -->
+            <div class="flex-grow flex flex-col justify-center items-center bg-white border border-gray-200 rounded-xl p-6 sm:p-10 shadow-sm relative">
+                
+                <!-- Prompt Area -->
+                <div id="quiz-prompt" class="text-center w-full mb-8">
+                    <h3 id="prompt-text" class="text-2xl sm:text-3xl font-bold academic-title mb-4">Prompt text</h3>
+                    <!-- Canvas for rendering structures if needed -->
+                    <div id="prompt-canvas-container" class="hidden flex justify-center items-center w-full min-h-[200px]">
+                        <canvas id="prompt-canvas" width="300" height="300" class="max-w-full h-auto"></canvas>
+                    </div>
+                </div>
+
+                <!-- Options Area (Multiple Choice) -->
+                <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                    <!-- Option buttons injected here -->
+                </div>
+
+                <!-- Drag and Drop Area (Level 6) -->
+                <div id="quiz-dnd-area" class="hidden w-full flex flex-col items-center">
+                    
+                    <div class="text-sm text-gray-500 mb-4 text-center max-w-md">
+                        Drag the correct side chain (R-group) below and drop it onto the α-carbon (*) of the backbone.
+                    </div>
+
+                    <!-- Backbone Target -->
+                    <div class="relative w-full max-w-md flex justify-center mb-8">
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 w-full max-w-[300px] flex flex-col items-center bg-gray-50 relative transition-all duration-200" id="drop-zone">
+                            <span class="text-xs font-bold text-gray-400 absolute top-2 left-2 uppercase tracking-wide">Backbone</span>
+                            <canvas id="backbone-canvas" width="200" height="150" class="mb-2"></canvas>
+                            <div class="absolute inset-0 z-10 w-full h-full flex items-center justify-center pointer-events-none hidden" id="drop-success-overlay">
+                                <!-- Dropped item rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Draggable Pool -->
+                    <div class="w-full border-t border-gray-100 pt-6">
+                        <div class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-4 text-center">Available R-Groups</div>
+                        <div id="draggable-pool" class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
+                            <!-- Draggables injected here -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Feedback Area (Hidden by default) -->
+                <div id="quiz-feedback" class="mt-8 hidden flex-col items-center w-full">
+                    <div id="feedback-message" class="text-lg font-semibold mb-4 px-6 py-2 rounded-md"></div>
+                    <button id="btn-next" class="bg-gray-900 text-white px-8 py-3 rounded-md hover:bg-gray-800 transition shadow-sm font-medium w-full sm:w-auto">
+                        Continue to Next
+                    </button>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="mt-8 text-center text-xs text-gray-400 py-4">
+            Designed for rigorous academic assessment. Built for biomedicine.
+        </footer>
+    </div>
+
+    <!-- Ghost element for custom touch/mouse dragging -->
+    <div id="drag-ghost" class="hidden-view pointer-events-none"></div>
+
+    <script>
+        /**
+         * Amino Acid Database
+         * Contains Names, 1-letter, 3-letter codes, and SMILES strings for accurate 2D rendering.
+         * SMILES strings are carefully selected for 2D visual clarity in an academic context.
+         */
+        const aminoAcids = [
+            { name: "Alanine", one: "A", three: "Ala", smiles: "CC(N)C(=O)O", r_smiles: "*C" },
+            { name: "Arginine", one: "R", three: "Arg", smiles: "N=C(N)NCCCC(N)C(=O)O", r_smiles: "*CCCNC(=N)N" },
+            { name: "Asparagine", one: "N", three: "Asn", smiles: "NC(=O)CC(N)C(=O)O", r_smiles: "*CC(=O)N" },
+            { name: "Aspartic acid", one: "D", three: "Asp", smiles: "OC(=O)CC(N)C(=O)O", r_smiles: "*CC(=O)O" },
+            { name: "Cysteine", one: "C", three: "Cys", smiles: "SCC(N)C(=O)O", r_smiles: "*CS" },
+            { name: "Glutamine", one: "Q", three: "Gln", smiles: "NC(=O)CCC(N)C(=O)O", r_smiles: "*CCC(=O)N" },
+            { name: "Glutamic acid", one: "E", three: "Glu", smiles: "OC(=O)CCC(N)C(=O)O", r_smiles: "*CCC(=O)O" },
+            { name: "Glycine", one: "G", three: "Gly", smiles: "NCC(=O)O", r_smiles: "*[H]" },
+            { name: "Histidine", one: "H", three: "His", smiles: "OC(=O)C(N)Cc1c[nH]cn1", r_smiles: "*Cc1c[nH]cn1" },
+            { name: "Isoleucine", one: "I", three: "Ile", smiles: "CCC(C)C(N)C(=O)O", r_smiles: "*C(C)CC" },
+            { name: "Leucine", one: "L", three: "Leu", smiles: "CC(C)CC(N)C(=O)O", r_smiles: "*CC(C)C" },
+            { name: "Lysine", one: "K", three: "Lys", smiles: "NCCCCC(N)C(=O)O", r_smiles: "*CCCCN" },
+            { name: "Methionine", one: "M", three: "Met", smiles: "CSCCC(N)C(=O)O", r_smiles: "*CCSC" },
+            { name: "Phenylalanine", one: "F", three: "Phe", smiles: "OC(=O)C(N)Cc1ccccc1", r_smiles: "*Cc1ccccc1" },
+            // Proline is excluded from Level 6 drag-and-drop due to its cyclical nature bonding to the amine group, making isolated R-group attachment complex.
+            { name: "Proline", one: "P", three: "Pro", smiles: "OC(=O)C1CCCN1", r_smiles: "*1CCCC1", noAssembly: true },
+            { name: "Serine", one: "S", three: "Ser", smiles: "OCC(N)C(=O)O", r_smiles: "*CO" },
+            { name: "Threonine", one: "T", three: "Thr", smiles: "CC(O)C(N)C(=O)O", r_smiles: "*C(O)C" },
+            { name: "Tryptophan", one: "W", three: "Trp", smiles: "OC(=O)C(N)Cc1c[nH]c2ccccc12", r_smiles: "*Cc1c[nH]c2ccccc12" },
+            { name: "Tyrosine", one: "Y", three: "Tyr", smiles: "OC(=O)C(N)Cc1ccc(O)cc1", r_smiles: "*Cc1ccc(O)cc1" },
+            { name: "Valine", one: "V", three: "Val", smiles: "CC(C)C(N)C(=O)O", r_smiles: "*C(C)C" }
+        ];
+
+        const levels = [
+            { id: 1, title: "Level 1: Code to Name", desc: "Associate a provided 1 or 3-letter code with its correct full name." },
+            { id: 2, title: "Level 2: Name to Code", desc: "Given the full name, identify the correct 1 or 3-letter code." },
+            { id: 3, title: "Level 3: 1-Letter to 3-Letter", desc: "Translate a 1-letter code directly to its 3-letter counterpart." },
+            { id: 4, title: "Level 4: 3-Letter to 1-Letter", desc: "Translate a 3-letter code directly to its 1-letter counterpart." },
+            { id: 5, title: "Level 5: Structure to Code", desc: "Identify the amino acid by analyzing its 2D chemical structure." },
+            { id: 6, title: "Level 6: Structural Assembly", desc: "Construct the target amino acid by dragging the correct R-group to the backbone." }
+        ];
+
+        let state = {
+            currentLevel: null,
+            score: 0,
+            questionData: null,
+            drawer: null // Holds the SmilesDrawer instance
+        };
+
+        // DOM Elements
+        const views = {
+            menu: document.getElementById('menu-view'),
+            quiz: document.getElementById('quiz-view')
+        };
+        const els = {
+            levelTitle: document.getElementById('quiz-level-title'),
+            score: document.getElementById('quiz-score'),
+            promptText: document.getElementById('prompt-text'),
+            promptCanvasContainer: document.getElementById('prompt-canvas-container'),
+            promptCanvas: document.getElementById('prompt-canvas'),
+            optionsArea: document.getElementById('quiz-options'),
+            dndArea: document.getElementById('quiz-dnd-area'),
+            feedbackArea: document.getElementById('quiz-feedback'),
+            feedbackMsg: document.getElementById('feedback-message'),
+            btnNext: document.getElementById('btn-next'),
+            btnBack: document.getElementById('btn-back'),
+            menuGrid: document.querySelector('#menu-view .grid'),
+            draggablePool: document.getElementById('draggable-pool'),
+            dropZone: document.getElementById('drop-zone'),
+            backboneCanvas: document.getElementById('backbone-canvas'),
+            dropSuccessOverlay: document.getElementById('drop-success-overlay'),
+            dragGhost: document.getElementById('drag-ghost')
+        };
+
+        
+        // Fisher-Yates Shuffle
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function getRandomItems(array, count, excludeItem = null) {
+            let pool = array.filter(item => item !== excludeItem);
+            return shuffle([...pool]).slice(0, count);
+        }
+
+        function drawMolecule(smiles, canvasId, width = 300, height = 300) {
+            const canvas = document.getElementById(canvasId);
+            // Adjust canvas properties
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Clear canvas
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            try {
+                // Initialize SmilesDrawer with specific dimensions to fit bounds tightly
+                const drawer = new SmiDrawer({
+                    width: width,
+                    height: height,
+                    padding: 5,
+                    themes: {
+                        light: {
+                            C: '#111827', O: '#ef4444', N: '#3b82f6', S: '#eab308', 
+                            BACKGROUND: '#ffffff', HIGHLIGHT: '#e5e7eb'
+                        }
+                    }
+                });
+                // Use the configured instance to parse and draw
+                drawer.draw(smiles, '#' + canvasId, 'light');
+            } catch (err) {
+                console.error("Error drawing SMILES: ", smiles, err);
+                ctx.font = "14px Inter";
+                ctx.fillStyle = "red";
+                ctx.fillText("Structure Render Error", 10, 50);
+            }
+        }
+
+        
+        function initApp() {
+            renderMenu();
+            
+            // Global listeners
+            els.btnBack.addEventListener('click', () => showView('menu'));
+            els.btnNext.addEventListener('click', generateQuestion);
+            
+            // Initialize touch/mouse drag handlers for Level 6
+            setupDragAndDrop();
+        }
+
+        function showView(viewName) {
+            if (viewName === 'menu') {
+                views.menu.classList.remove('hidden-view');
+                views.quiz.classList.add('hidden-view');
+                state.currentLevel = null;
+                state.score = 0;
+            } else if (viewName === 'quiz') {
+                views.menu.classList.add('hidden-view');
+                views.quiz.classList.remove('hidden-view');
+            }
+        }
+
+        function renderMenu() {
+            els.menuGrid.innerHTML = '';
+            levels.forEach(level => {
+                const card = document.createElement('div');
+                card.className = "border border-gray-200 rounded-lg p-6 bg-white hover:border-gray-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">${level.title}</h3>
+                        <p class="text-gray-600 text-sm mb-4 leading-relaxed">${level.desc}</p>
+                    </div>
+                    <button class="w-full bg-gray-50 text-gray-800 border border-gray-200 font-medium py-2 px-4 rounded hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors">
+                        Start Level
+                    </button>
+                `;
+                card.addEventListener('click', () => startLevel(level.id));
+                els.menuGrid.appendChild(card);
+            });
+        }
+
+
+        function startLevel(levelId) {
+            state.currentLevel = levelId;
+            state.score = 0;
+            els.levelTitle.textContent = levels.find(l => l.id === levelId).title;
+            updateScoreDisplay();
+            showView('quiz');
+            generateQuestion();
+        }
+
+        function updateScoreDisplay() {
+            els.score.textContent = state.score;
+        }
+
+        function generateQuestion() {
+            // Reset UI states
+            els.optionsArea.innerHTML = '';
+            els.draggablePool.innerHTML = '';
+            els.feedbackArea.classList.add('hidden');
+            els.feedbackArea.classList.remove('flex');
+            els.promptCanvasContainer.classList.add('hidden');
+            els.promptText.classList.remove('hidden');
+            els.optionsArea.classList.remove('hidden-view');
+            els.dndArea.classList.add('hidden');
+            els.dropSuccessOverlay.innerHTML = '';
+            els.dropSuccessOverlay.classList.add('hidden');
+            
+            // Enable options
+            els.optionsArea.style.pointerEvents = 'auto';
+            els.draggablePool.style.pointerEvents = 'auto';
+
+            const level = state.currentLevel;
+            const target = aminoAcids[Math.floor(Math.random() * aminoAcids.length)];
+            let promptText = "";
+            let options = [];
+            let correctOption = "";
+            
+            // Generate content based on level
+            switch(level) {
+                case 1: // 1 or 3 -> Name
+                    const useThree1 = Math.random() > 0.5;
+                    promptText = useThree1 ? target.three : target.one;
+                    correctOption = target.name;
+                    options = getRandomItems(aminoAcids, 3, target).map(a => a.name);
+                    break;
+                case 2: // Name -> 1 or 3
+                    const useThree2 = Math.random() > 0.5;
+                    promptText = target.name;
+                    correctOption = useThree2 ? target.three : target.one;
+                    options = getRandomItems(aminoAcids, 3, target).map(a => useThree2 ? a.three : a.one);
+                    break;
+                case 3: // 1 -> 3
+                    promptText = target.one;
+                    correctOption = target.three;
+                    options = getRandomItems(aminoAcids, 3, target).map(a => a.three);
+                    break;
+                case 4: // 3 -> 1
+                    promptText = target.three;
+                    correctOption = target.one;
+                    options = getRandomItems(aminoAcids, 3, target).map(a => a.one);
+                    break;
+                case 5: // Structure -> 1 or 3
+                    promptText = "Identify the structure:";
+                    const useThree5 = Math.random() > 0.5;
+                    correctOption = useThree5 ? target.three : target.one;
+                    options = getRandomItems(aminoAcids, 3, target).map(a => useThree5 ? a.three : a.one);
+                    els.promptCanvasContainer.classList.remove('hidden');
+                    // Delay slightly to ensure layout is done before drawing
+                    setTimeout(() => drawMolecule(target.smiles, 'prompt-canvas'), 10);
+                    break;
+                case 6: // Assembly
+                    generateAssemblyQuestion();
+                    return; // Short circuit as logic is vastly different
+            }
+
+            // Standard multiple choice setup
+            els.promptText.textContent = promptText;
+            
+            options.push(correctOption);
+            options = shuffle(options);
+
+            state.questionData = { correctOption: correctOption };
+
+            options.forEach(optText => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full bg-white border-2 border-gray-200 text-gray-800 font-medium text-lg py-4 px-6 rounded-lg hover:border-gray-900 hover:bg-gray-50 focus:outline-none";
+                btn.textContent = optText;
+                btn.addEventListener('click', () => handleAnswer(optText, btn));
+                els.optionsArea.appendChild(btn);
+            });
+        }
+
+
+        function generateAssemblyQuestion() {
+            els.optionsArea.classList.add('hidden-view');
+            els.dndArea.classList.remove('hidden');
+            
+            // Exclude Proline for clean drag-and-drop mechanics due to cyclical structure
+            const validAcids = aminoAcids.filter(a => !a.noAssembly);
+            const target = validAcids[Math.floor(Math.random() * validAcids.length)];
+            
+            els.promptText.textContent = `Construct ${target.name} (${target.three})`;
+            
+            // Draw common backbone on the drop target
+            // SMILES for backbone with a clear attachment asterisk: NC(*)C(=O)O
+            setTimeout(() => drawMolecule('NC(*)C(=O)O', 'backbone-canvas', 200, 150), 10);
+            
+            // Setup Draggable Pool
+            const correctR = target;
+            const distractorPool = getRandomItems(validAcids, 3, correctR);
+            let pool = shuffle([correctR, ...distractorPool]);
+
+            state.questionData = { correctR_name: target.name, correctR_smiles: target.r_smiles };
+
+            pool.forEach((aa, index) => {
+                const dItem = document.createElement('div');
+                const cid = `r-canvas-${index}`;
+                dItem.className = "draggable-item bg-white border border-gray-200 rounded-lg p-2 cursor-grab hover:border-gray-400 hover:shadow-sm flex justify-center items-center h-24 touch-none transition-transform";
+                dItem.innerHTML = `<canvas id="${cid}" width="100" height="80" class="max-w-full max-h-full object-contain"></canvas>`;
+                
+                // Attach metadata for evaluation
+                dItem.dataset.name = aa.name;
+                dItem.dataset.smiles = aa.r_smiles;
+                
+                els.draggablePool.appendChild(dItem);
+                
+                setTimeout(() => drawMolecule(aa.r_smiles, cid, 100, 80), 10);
+                
+                // Add custom drag events
+                attachDragEvents(dItem);
+            });
+        }
+
+
+        let activeDrag = null;
+        let startX, startY;
+        let initialX, initialY;
+
+        function attachDragEvents(element) {
+            element.addEventListener('pointerdown', handleDragStart, { passive: false });
+        }
+
+        function handleDragStart(e) {
+            // Prevent default to stop scrolling while dragging
+            if (e.pointerType === 'touch') e.preventDefault();
+            
+            activeDrag = e.currentTarget;
+            activeDrag.style.opacity = '0.4';
+            activeDrag.classList.remove('hover:border-gray-400', 'hover:shadow-sm');
+
+            // Setup Ghost element
+            els.dragGhost.innerHTML = '';
+            const clone = activeDrag.cloneNode(true);
+            clone.style.opacity = '1';
+            clone.className = "bg-white border-2 border-gray-900 rounded-lg p-2 flex justify-center items-center w-full h-full";
+            
+            // Canvas state isn't copied by cloneNode, need to redraw or copy image data
+            const sourceCanvas = activeDrag.querySelector('canvas');
+            const ghostCanvas = clone.querySelector('canvas');
+            const destCtx = ghostCanvas.getContext('2d');
+            destCtx.drawImage(sourceCanvas, 0, 0);
+            
+            els.dragGhost.appendChild(clone);
+            els.dragGhost.style.width = `${activeDrag.offsetWidth}px`;
+            els.dragGhost.style.height = `${activeDrag.offsetHeight}px`;
+            els.dragGhost.classList.remove('hidden-view');
+
+            // Position ghost at pointer
+            updateGhostPosition(e.clientX, e.clientY);
+
+            // Add global listeners
+            document.addEventListener('pointermove', handleDragMove, { passive: false });
+            document.addEventListener('pointerup', handleDragEnd);
+        }
+
+        function updateGhostPosition(x, y) {
+            els.dragGhost.style.left = `${x}px`;
+            els.dragGhost.style.top = `${y}px`;
+        }
+
+        function handleDragMove(e) {
+            if (!activeDrag) return;
+            e.preventDefault();
+            updateGhostPosition(e.clientX, e.clientY);
+
+            // Check if hovering over drop zone
+            const rect = els.dropZone.getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                els.dropZone.classList.add('dropzone-active');
+            } else {
+                els.dropZone.classList.remove('dropzone-active');
+            }
+        }
+
+        function handleDragEnd(e) {
+            if (!activeDrag) return;
+
+            document.removeEventListener('pointermove', handleDragMove);
+            document.removeEventListener('pointerup', handleDragEnd);
+
+            els.dragGhost.classList.add('hidden-view');
+            activeDrag.style.opacity = '1';
+            els.dropZone.classList.remove('dropzone-active');
+
+            // Check drop location
+            const rect = els.dropZone.getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                
+                // Drop successful (structurally) -> Evaluate
+                evaluateDrop(activeDrag);
+            }
+
+            activeDrag = null;
+        }
+
+        function setupDragAndDrop() {
+            // Prevent default touch behaviors on the pool to allow smooth dragging
+            els.draggablePool.addEventListener('touchmove', (e) => {
+                if(activeDrag) e.preventDefault();
+            }, { passive: false });
+        }
+
+
+        function evaluateDrop(droppedItem) {
+            els.draggablePool.style.pointerEvents = 'none'; // Lock pool
+            
+            const selectedName = droppedItem.dataset.name;
+            const isCorrect = selectedName === state.questionData.correctR_name;
+
+            // Visual feedback on dropzone
+            els.backboneCanvas.classList.add('opacity-30'); // Dim backbone
+            els.dropSuccessOverlay.classList.remove('hidden');
+            els.dropSuccessOverlay.innerHTML = '';
+            
+            // Copy the dropped canvas to overlay
+            const droppedCanvas = droppedItem.querySelector('canvas');
+            const displayCanvas = document.createElement('canvas');
+            displayCanvas.width = droppedCanvas.width;
+            displayCanvas.height = droppedCanvas.height;
+            displayCanvas.className = "max-w-full max-h-full object-contain"; // Ensure it fits the dropzone bounds cleanly
+            displayCanvas.getContext('2d').drawImage(droppedCanvas, 0, 0);
+            els.dropSuccessOverlay.appendChild(displayCanvas);
+
+            showFeedback(isCorrect, isCorrect ? "Structure Assembled Correctly!" : `Incorrect. You attached the R-group for ${selectedName}.`);
+        }
+
+        function handleAnswer(selectedOption, btnElement) {
+            els.optionsArea.style.pointerEvents = 'none'; // Prevent double clicking
+            const isCorrect = selectedOption === state.questionData.correctOption;
+
+            // Visual marking on options
+            const allBtns = els.optionsArea.querySelectorAll('button');
+            allBtns.forEach(b => {
+                if (b.textContent === state.questionData.correctOption) {
+                    b.classList.remove('border-gray-200', 'text-gray-800');
+                    b.classList.add('border-green-500', 'bg-green-50', 'text-green-800');
+                } else if (b === btnElement && !isCorrect) {
+                    b.classList.remove('border-gray-200', 'text-gray-800');
+                    b.classList.add('border-red-400', 'bg-red-50', 'text-red-700');
+                } else {
+                    b.classList.add('opacity-50');
+                }
+            });
+
+            showFeedback(isCorrect, isCorrect ? "Correct!" : `Incorrect. The correct answer is ${state.questionData.correctOption}.`);
+        }
+
+        function showFeedback(isCorrect, messageText) {
+            els.feedbackArea.classList.remove('hidden');
+            els.feedbackArea.classList.add('flex');
+            
+            els.feedbackMsg.textContent = messageText;
+            els.feedbackMsg.className = "text-lg font-semibold mb-4 px-6 py-3 rounded-md w-full sm:w-auto text-center border ";
+            
+            if (isCorrect) {
+                state.score++;
+                updateScoreDisplay();
+                els.feedbackMsg.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
+            } else {
+                state.score = 0; // Reset streak on error (academic rigor)
+                updateScoreDisplay();
+                els.feedbackMsg.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
+            }
+            
+            // Scroll to next button on mobile
+            setTimeout(() => els.btnNext.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+        }
+
+        // Initialize application on DOM content load
+        document.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>
