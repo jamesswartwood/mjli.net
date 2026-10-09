@@ -30,19 +30,6 @@
             display: none !important;
         }
 
-        /* Styling for the drag-and-drop ghost element */
-        #drag-ghost {
-            position: fixed;
-            pointer-events: none;
-            z-index: 1000;
-            opacity: 0.9;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            border-radius: 0.375rem;
-            background: white;
-            transition: transform 0.05s linear;
-        }
-
         /* Options grid styling */
         .option-btn {
             transition: all 0.2s ease-in-out;
@@ -57,13 +44,6 @@
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
             image-rendering: pixelated;
-        }
-
-        /* Dropzone animations */
-        .dropzone-active {
-            border-color: #3b82f6 !important;
-            background-color: #eff6ff !important;
-            transform: scale(1.02);
         }
     </style>
 </head>
@@ -120,34 +100,6 @@
                     <!-- Option buttons injected here -->
                 </div>
 
-                <!-- Drag and Drop Area (Level 6) -->
-                <div id="quiz-dnd-area" class="hidden w-full flex flex-col items-center">
-                    
-                    <div class="text-sm text-gray-500 mb-4 text-center max-w-md">
-                        Drag the correct side chain (R-group) below and drop it onto the α-carbon (*) of the backbone.
-                    </div>
-
-                    <!-- Backbone Target -->
-                    <div class="relative w-full max-w-md flex justify-center mb-8">
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 w-full max-w-[300px] flex flex-col items-center bg-gray-50 relative transition-all duration-200" id="drop-zone">
-                            <span class="text-xs font-bold text-gray-400 absolute top-2 left-2 uppercase tracking-wide">Backbone</span>
-                            <canvas id="backbone-canvas" width="200" height="150" class="mb-2"></canvas>
-                            <div class="absolute inset-0 z-10 w-full h-full flex items-center justify-center pointer-events-none hidden" id="drop-success-overlay">
-                                <!-- Dropped item rendered here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Draggable Pool -->
-                    <div class="w-full border-t border-gray-100 pt-6">
-                        <div class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-4 text-center">Available R-Groups</div>
-                        <div id="draggable-pool" class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
-                            <!-- Draggables injected here -->
-                        </div>
-                    </div>
-
-                </div>
-
                 <!-- Feedback Area (Hidden by default) -->
                 <div id="quiz-feedback" class="mt-8 hidden flex-col items-center w-full">
                     <div id="feedback-message" class="text-lg font-semibold mb-4 px-6 py-2 rounded-md"></div>
@@ -185,42 +137,77 @@
             </div>
         </main>
 
+        <!-- Randomized Amino Acid Codes & Structures View -->
+        <main id="table-view" class="flex-grow w-full hidden-view flex flex-col">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-200">
+                <button id="btn-table-back" class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center transition bg-gray-100 hover:bg-gray-200 px-3.5 py-2 rounded-lg border border-gray-200">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    Main Menu
+                </button>
+                <div class="text-left sm:text-center">
+                    <h2 class="academic-title text-xl sm:text-2xl font-bold text-gray-900">Randomized Amino Acid Codes</h2>
+                    <p class="text-xs text-gray-500 font-medium mt-0.5">All 20 canonical amino acids displayed in randomized sequence for recall verification</p>
+                </div>
+                <button id="btn-shuffle-table" class="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition font-medium text-sm shadow-sm active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Re-Randomize Order
+                </button>
+            </div>
+
+            <!-- Table Container -->
+            <div class="w-full bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[620px]">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                <th scope="col" class="py-3 px-4 text-center w-12 text-gray-400">#</th>
+                                <th scope="col" class="py-3 px-6">Name</th>
+                                <th scope="col" class="py-3 px-4 text-center">3-Letter Code</th>
+                                <th scope="col" class="py-3 px-4 text-center">1-Letter Code</th>
+                                <th scope="col" class="py-3 px-6 text-center w-44">2D Chemical Structure</th>
+                            </tr>
+                        </thead>
+                        <tbody id="amino-table-body" class="divide-y divide-gray-200 text-sm">
+                            <!-- Injected rows will appear here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
         <footer class="mt-8 text-center text-xs text-gray-400 py-4">
             Designed for rigorous academic assessment. Built for biomedicine.
         </footer>
     </div>
 
-    <!-- Ghost element for custom touch/mouse dragging -->
-    <div id="drag-ghost" class="hidden-view pointer-events-none"></div>
-
     <script>
         /**
          * Amino Acid Database
          * Contains Names, 1-letter, 3-letter codes, and SMILES strings for accurate 2D rendering.
-         * SMILES strings are carefully selected for 2D visual clarity in an academic context.
          */
         const aminoAcids = [
-            { name: "Alanine", one: "A", three: "Ala", smiles: "CC(N)C(=O)O", r_smiles: "*C" },
-            { name: "Arginine", one: "R", three: "Arg", smiles: "N=C(N)NCCCC(N)C(=O)O", r_smiles: "*CCCNC(=N)N" },
-            { name: "Asparagine", one: "N", three: "Asn", smiles: "NC(=O)CC(N)C(=O)O", r_smiles: "*CC(=O)N" },
-            { name: "Aspartic acid", one: "D", three: "Asp", smiles: "OC(=O)CC(N)C(=O)O", r_smiles: "*CC(=O)O" },
-            { name: "Cysteine", one: "C", three: "Cys", smiles: "SCC(N)C(=O)O", r_smiles: "*CS" },
-            { name: "Glutamine", one: "Q", three: "Gln", smiles: "NC(=O)CCC(N)C(=O)O", r_smiles: "*CCC(=O)N" },
-            { name: "Glutamic acid", one: "E", three: "Glu", smiles: "OC(=O)CCC(N)C(=O)O", r_smiles: "*CCC(=O)O" },
-            { name: "Glycine", one: "G", three: "Gly", smiles: "NCC(=O)O", r_smiles: "*[H]" },
-            { name: "Histidine", one: "H", three: "His", smiles: "OC(=O)C(N)Cc1c[nH]cn1", r_smiles: "*Cc1c[nH]cn1" },
-            { name: "Isoleucine", one: "I", three: "Ile", smiles: "CCC(C)C(N)C(=O)O", r_smiles: "*C(C)CC" },
-            { name: "Leucine", one: "L", three: "Leu", smiles: "CC(C)CC(N)C(=O)O", r_smiles: "*CC(C)C" },
-            { name: "Lysine", one: "K", three: "Lys", smiles: "NCCCCC(N)C(=O)O", r_smiles: "*CCCCN" },
-            { name: "Methionine", one: "M", three: "Met", smiles: "CSCCC(N)C(=O)O", r_smiles: "*CCSC" },
-            { name: "Phenylalanine", one: "F", three: "Phe", smiles: "OC(=O)C(N)Cc1ccccc1", r_smiles: "*Cc1ccccc1" },
-            // Proline is excluded from Level 6 drag-and-drop due to its cyclical nature bonding to the amine group, making isolated R-group attachment complex.
-            { name: "Proline", one: "P", three: "Pro", smiles: "OC(=O)C1CCCN1", r_smiles: "*1CCCC1", noAssembly: true },
-            { name: "Serine", one: "S", three: "Ser", smiles: "OCC(N)C(=O)O", r_smiles: "*CO" },
-            { name: "Threonine", one: "T", three: "Thr", smiles: "CC(O)C(N)C(=O)O", r_smiles: "*C(O)C" },
-            { name: "Tryptophan", one: "W", three: "Trp", smiles: "OC(=O)C(N)Cc1c[nH]c2ccccc12", r_smiles: "*Cc1c[nH]c2ccccc12" },
-            { name: "Tyrosine", one: "Y", three: "Tyr", smiles: "OC(=O)C(N)Cc1ccc(O)cc1", r_smiles: "*Cc1ccc(O)cc1" },
-            { name: "Valine", one: "V", three: "Val", smiles: "CC(C)C(N)C(=O)O", r_smiles: "*C(C)C" }
+            { name: "Alanine", one: "A", three: "Ala", smiles: "CC(N)C(=O)O" },
+            { name: "Arginine", one: "R", three: "Arg", smiles: "N=C(N)NCCCC(N)C(=O)O" },
+            { name: "Asparagine", one: "N", three: "Asn", smiles: "NC(=O)CC(N)C(=O)O" },
+            { name: "Aspartic acid", one: "D", three: "Asp", smiles: "OC(=O)CC(N)C(=O)O" },
+            { name: "Cysteine", one: "C", three: "Cys", smiles: "SCC(N)C(=O)O" },
+            { name: "Glutamine", one: "Q", three: "Gln", smiles: "NC(=O)CCC(N)C(=O)O" },
+            { name: "Glutamic acid", one: "E", three: "Glu", smiles: "OC(=O)CCC(N)C(=O)O" },
+            { name: "Glycine", one: "G", three: "Gly", smiles: "NCC(=O)O" },
+            { name: "Histidine", one: "H", three: "His", smiles: "OC(=O)C(N)Cc1c[nH]cn1" },
+            { name: "Isoleucine", one: "I", three: "Ile", smiles: "CCC(C)C(N)C(=O)O" },
+            { name: "Leucine", one: "L", three: "Leu", smiles: "CC(C)CC(N)C(=O)O" },
+            { name: "Lysine", one: "K", three: "Lys", smiles: "NCCCCC(N)C(=O)O" },
+            { name: "Methionine", one: "M", three: "Met", smiles: "CSCCC(N)C(=O)O" },
+            { name: "Phenylalanine", one: "F", three: "Phe", smiles: "OC(=O)C(N)Cc1ccccc1" },
+            { name: "Proline", one: "P", three: "Pro", smiles: "OC(=O)C1CCCN1" },
+            { name: "Serine", one: "S", three: "Ser", smiles: "OCC(N)C(=O)O" },
+            { name: "Threonine", one: "T", three: "Thr", smiles: "CC(O)C(N)C(=O)O" },
+            { name: "Tryptophan", one: "W", three: "Trp", smiles: "OC(=O)C(N)Cc1c[nH]c2ccccc12" },
+            { name: "Tyrosine", one: "Y", three: "Tyr", smiles: "OC(=O)C(N)Cc1ccc(O)cc1" },
+            { name: "Valine", one: "V", three: "Val", smiles: "CC(C)C(N)C(=O)O" }
         ];
 
         const levels = [
@@ -229,7 +216,12 @@
             { id: 3, title: "Level 3: 1-Letter to 3-Letter", desc: "Translate a 1-letter code directly to its 3-letter counterpart." },
             { id: 4, title: "Level 4: 3-Letter to 1-Letter", desc: "Translate a 3-letter code directly to its 1-letter counterpart." },
             { id: 5, title: "Level 5: Structure to Code", desc: "Identify the amino acid by analyzing its 2D chemical structure." },
-            { id: 6, title: "Level 6: Structural Assembly", desc: "Construct the target amino acid by dragging the correct R-group to the backbone." }
+            { 
+                id: 'table', 
+                title: "Randomized Amino Acid Codes", 
+                desc: "Interactive reference table of all 20 amino acids with Name, 3-letter, 1-letter codes, and chemical structures. Re-randomize order on demand.", 
+                isTable: true 
+            }
         ];
 
         let state = {
@@ -237,15 +229,15 @@
             score: 0,
             questionQueue: [],
             currentIndex: 0,
-            questionData: null,
-            drawer: null // Holds the SmilesDrawer instance
+            questionData: null
         };
 
         // DOM Elements
         const views = {
             menu: document.getElementById('menu-view'),
             quiz: document.getElementById('quiz-view'),
-            results: document.getElementById('results-view')
+            results: document.getElementById('results-view'),
+            table: document.getElementById('table-view')
         };
         const els = {
             levelTitle: document.getElementById('quiz-level-title'),
@@ -256,17 +248,11 @@
             promptCanvasContainer: document.getElementById('prompt-canvas-container'),
             promptCanvas: document.getElementById('prompt-canvas'),
             optionsArea: document.getElementById('quiz-options'),
-            dndArea: document.getElementById('quiz-dnd-area'),
             feedbackArea: document.getElementById('quiz-feedback'),
             feedbackMsg: document.getElementById('feedback-message'),
             btnNext: document.getElementById('btn-next'),
             btnBack: document.getElementById('btn-back'),
             menuGrid: document.querySelector('#menu-view .grid'),
-            draggablePool: document.getElementById('draggable-pool'),
-            dropZone: document.getElementById('drop-zone'),
-            backboneCanvas: document.getElementById('backbone-canvas'),
-            dropSuccessOverlay: document.getElementById('drop-success-overlay'),
-            dragGhost: document.getElementById('drag-ghost'),
             // Results screen elements
             resultGradeBadge: document.getElementById('result-grade-badge'),
             resultTitle: document.getElementById('result-title'),
@@ -275,7 +261,11 @@
             resultSummary: document.getElementById('result-summary'),
             resultEvaluation: document.getElementById('result-evaluation'),
             btnResultMenu: document.getElementById('btn-result-menu'),
-            btnResultRetry: document.getElementById('btn-result-retry')
+            btnResultRetry: document.getElementById('btn-result-retry'),
+            // Table view elements
+            tableBody: document.getElementById('amino-table-body'),
+            btnTableBack: document.getElementById('btn-table-back'),
+            btnShuffleTable: document.getElementById('btn-shuffle-table')
         };
 
         // Standard academic grading scale
@@ -311,38 +301,34 @@
 
         function drawMolecule(smiles, canvasId, width = 300, height = 300) {
             const canvas = document.getElementById(canvasId);
-            // Adjust canvas properties
+            if (!canvas) return;
             canvas.width = width;
             canvas.height = height;
             
-            // Clear canvas
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             try {
-                // Initialize SmilesDrawer with specific dimensions to fit bounds tightly
                 const drawer = new SmiDrawer({
                     width: width,
                     height: height,
-                    padding: 5,
+                    padding: 6,
                     themes: {
                         light: {
-                            C: '#111827', O: '#ef4444', N: '#3b82f6', S: '#eab308', 
+                            C: '#111827', O: '#ef4444', N: '#2563eb', S: '#d97706', 
                             BACKGROUND: '#ffffff', HIGHLIGHT: '#e5e7eb'
                         }
                     }
                 });
-                // Use the configured instance to parse and draw
                 drawer.draw(smiles, '#' + canvasId, 'light');
             } catch (err) {
                 console.error("Error drawing SMILES: ", smiles, err);
-                ctx.font = "14px Inter";
+                ctx.font = "12px Inter";
                 ctx.fillStyle = "red";
-                ctx.fillText("Structure Render Error", 10, 50);
+                ctx.fillText("Render Error", 10, 30);
             }
         }
 
-        
         function initApp() {
             renderMenu();
             
@@ -352,14 +338,16 @@
             els.btnResultMenu.addEventListener('click', () => showView('menu'));
             els.btnResultRetry.addEventListener('click', () => startLevel(state.currentLevel));
             
-            // Initialize touch/mouse drag handlers for Level 6
-            setupDragAndDrop();
+            // Randomized Table listeners
+            els.btnTableBack.addEventListener('click', () => showView('menu'));
+            els.btnShuffleTable.addEventListener('click', renderRandomizedTable);
         }
 
         function showView(viewName) {
             views.menu.classList.add('hidden-view');
             views.quiz.classList.add('hidden-view');
             views.results.classList.add('hidden-view');
+            views.table.classList.add('hidden-view');
 
             if (viewName === 'menu') {
                 views.menu.classList.remove('hidden-view');
@@ -369,6 +357,8 @@
                 views.quiz.classList.remove('hidden-view');
             } else if (viewName === 'results') {
                 views.results.classList.remove('hidden-view');
+            } else if (viewName === 'table') {
+                views.table.classList.remove('hidden-view');
             }
         }
 
@@ -376,30 +366,80 @@
             els.menuGrid.innerHTML = '';
             levels.forEach(level => {
                 const card = document.createElement('div');
-                card.className = "border border-gray-200 rounded-lg p-6 bg-white hover:border-gray-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between";
+                const isSpecial = level.isTable;
+                card.className = `border rounded-lg p-6 bg-white hover:border-gray-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between ${isSpecial ? 'border-blue-200 bg-blue-50/20' : 'border-gray-200'}`;
+                
+                const badge = isSpecial ? '<span class="inline-block px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase bg-blue-100 text-blue-800 rounded mb-2">Interactive Study Mode</span>' : '';
+                const btnText = isSpecial ? 'Open Reference Table' : 'Start Level';
+                const btnClass = isSpecial 
+                    ? 'bg-blue-600 text-white font-medium py-2 px-4 rounded hover:bg-blue-700 transition-colors' 
+                    : 'bg-gray-50 text-gray-800 border border-gray-200 font-medium py-2 px-4 rounded hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors';
+
                 card.innerHTML = `
                     <div>
+                        ${badge}
                         <h3 class="text-lg font-bold text-gray-900 mb-2">${level.title}</h3>
                         <p class="text-gray-600 text-sm mb-4 leading-relaxed">${level.desc}</p>
                     </div>
-                    <button class="w-full bg-gray-50 text-gray-800 border border-gray-200 font-medium py-2 px-4 rounded hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-colors">
-                        Start Level
+                    <button class="w-full ${btnClass}">
+                        ${btnText}
                     </button>
                 `;
-                card.addEventListener('click', () => startLevel(level.id));
+                card.addEventListener('click', () => {
+                    if (level.isTable) {
+                        openTableView();
+                    } else {
+                        startLevel(level.id);
+                    }
+                });
                 els.menuGrid.appendChild(card);
             });
         }
 
+        function openTableView() {
+            showView('table');
+            renderRandomizedTable();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderRandomizedTable() {
+            const shuffledAcids = shuffle([...aminoAcids]);
+            els.tableBody.innerHTML = '';
+
+            shuffledAcids.forEach((aa, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/50 hover:bg-gray-50';
+                
+                const canvasId = `table-canvas-${index}`;
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-center font-mono text-xs text-gray-400">${index + 1}</td>
+                    <td class="py-3 px-6 font-semibold text-gray-900">${aa.name}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-block px-2.5 py-1 bg-gray-100 text-gray-800 rounded font-mono font-semibold text-xs border border-gray-200">
+                            ${aa.three}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="inline-block w-8 h-8 leading-8 bg-gray-900 text-white rounded-full font-mono font-bold text-sm text-center shadow-xs">
+                            ${aa.one}
+                        </span>
+                    </td>
+                    <td class="py-2 px-6 flex justify-center items-center">
+                        <canvas id="${canvasId}" width="140" height="90" class="max-w-full h-auto"></canvas>
+                    </td>
+                `;
+                els.tableBody.appendChild(tr);
+
+                // Asynchronously draw the molecule onto the row's canvas
+                setTimeout(() => drawMolecule(aa.smiles, canvasId, 140, 90), 10);
+            });
+        }
 
         function startLevel(levelId) {
             state.currentLevel = levelId;
             state.score = 0;
             state.currentIndex = 0;
-
-            // In Level 6, Proline is cyclized to the amine backbone, making R-chain detachment unique
-            const pool = levelId === 6 ? aminoAcids.filter(a => !a.noAssembly) : [...aminoAcids];
-            state.questionQueue = shuffle([...pool]);
+            state.questionQueue = shuffle([...aminoAcids]);
 
             els.levelTitle.textContent = levels.find(l => l.id === levelId).title;
             updateScoreDisplay();
@@ -443,19 +483,12 @@
 
             // Reset UI states
             els.optionsArea.innerHTML = '';
-            els.draggablePool.innerHTML = '';
             els.feedbackArea.classList.add('hidden');
             els.feedbackArea.classList.remove('flex');
             els.promptCanvasContainer.classList.add('hidden');
             els.promptText.classList.remove('hidden');
             els.optionsArea.classList.remove('hidden-view');
-            els.dndArea.classList.add('hidden');
-            els.dropSuccessOverlay.innerHTML = '';
-            els.dropSuccessOverlay.classList.add('hidden');
-            
-            // Enable options
             els.optionsArea.style.pointerEvents = 'auto';
-            els.draggablePool.style.pointerEvents = 'auto';
 
             const level = state.currentLevel;
             const target = state.questionQueue[state.currentIndex];
@@ -495,14 +528,10 @@
                     els.promptCanvasContainer.classList.remove('hidden');
                     setTimeout(() => drawMolecule(target.smiles, 'prompt-canvas'), 10);
                     break;
-                case 6: // Assembly
-                    generateAssemblyQuestion(target);
-                    return;
             }
 
-            // Standard multiple choice setup
+            // Multiple choice button configuration
             els.promptText.textContent = promptText;
-            
             options.push(correctOption);
             options = shuffle(options);
 
@@ -515,156 +544,6 @@
                 btn.addEventListener('click', () => handleAnswer(optText, btn));
                 els.optionsArea.appendChild(btn);
             });
-        }
-
-        function generateAssemblyQuestion(target) {
-            els.optionsArea.classList.add('hidden-view');
-            els.dndArea.classList.remove('hidden');
-            
-            const validAcids = aminoAcids.filter(a => !a.noAssembly);
-            
-            els.promptText.textContent = `Construct ${target.name} (${target.three})`;
-            
-            // Draw common backbone on the drop target
-            setTimeout(() => drawMolecule('NC(*)C(=O)O', 'backbone-canvas', 200, 150), 10);
-            
-            // Setup Draggable Pool
-            const correctR = target;
-            const distractorPool = getRandomItems(validAcids, 3, correctR);
-            let pool = shuffle([correctR, ...distractorPool]);
-
-            state.questionData = { correctR_name: target.name, correctR_smiles: target.r_smiles };
-
-            pool.forEach((aa, index) => {
-                const dItem = document.createElement('div');
-                const cid = `r-canvas-${index}`;
-                dItem.className = "draggable-item bg-white border border-gray-200 rounded-lg p-2 cursor-grab hover:border-gray-400 hover:shadow-sm flex justify-center items-center h-24 touch-none transition-transform";
-                dItem.innerHTML = `<canvas id="${cid}" width="100" height="80" class="max-w-full max-h-full object-contain"></canvas>`;
-                
-                dItem.dataset.name = aa.name;
-                dItem.dataset.smiles = aa.r_smiles;
-                
-                els.draggablePool.appendChild(dItem);
-                
-                setTimeout(() => drawMolecule(aa.r_smiles, cid, 100, 80), 10);
-                
-                attachDragEvents(dItem);
-            });
-        }
-
-
-        let activeDrag = null;
-        let startX, startY;
-        let initialX, initialY;
-
-        function attachDragEvents(element) {
-            element.addEventListener('pointerdown', handleDragStart, { passive: false });
-        }
-
-        function handleDragStart(e) {
-            // Prevent default to stop scrolling while dragging
-            if (e.pointerType === 'touch') e.preventDefault();
-            
-            activeDrag = e.currentTarget;
-            activeDrag.style.opacity = '0.4';
-            activeDrag.classList.remove('hover:border-gray-400', 'hover:shadow-sm');
-
-            // Setup Ghost element
-            els.dragGhost.innerHTML = '';
-            const clone = activeDrag.cloneNode(true);
-            clone.style.opacity = '1';
-            clone.className = "bg-white border-2 border-gray-900 rounded-lg p-2 flex justify-center items-center w-full h-full";
-            
-            // Canvas state isn't copied by cloneNode, need to redraw or copy image data
-            const sourceCanvas = activeDrag.querySelector('canvas');
-            const ghostCanvas = clone.querySelector('canvas');
-            const destCtx = ghostCanvas.getContext('2d');
-            destCtx.drawImage(sourceCanvas, 0, 0);
-            
-            els.dragGhost.appendChild(clone);
-            els.dragGhost.style.width = `${activeDrag.offsetWidth}px`;
-            els.dragGhost.style.height = `${activeDrag.offsetHeight}px`;
-            els.dragGhost.classList.remove('hidden-view');
-
-            // Position ghost at pointer
-            updateGhostPosition(e.clientX, e.clientY);
-
-            // Add global listeners
-            document.addEventListener('pointermove', handleDragMove, { passive: false });
-            document.addEventListener('pointerup', handleDragEnd);
-        }
-
-        function updateGhostPosition(x, y) {
-            els.dragGhost.style.left = `${x}px`;
-            els.dragGhost.style.top = `${y}px`;
-        }
-
-        function handleDragMove(e) {
-            if (!activeDrag) return;
-            e.preventDefault();
-            updateGhostPosition(e.clientX, e.clientY);
-
-            // Check if hovering over drop zone
-            const rect = els.dropZone.getBoundingClientRect();
-            if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                els.dropZone.classList.add('dropzone-active');
-            } else {
-                els.dropZone.classList.remove('dropzone-active');
-            }
-        }
-
-        function handleDragEnd(e) {
-            if (!activeDrag) return;
-
-            document.removeEventListener('pointermove', handleDragMove);
-            document.removeEventListener('pointerup', handleDragEnd);
-
-            els.dragGhost.classList.add('hidden-view');
-            activeDrag.style.opacity = '1';
-            els.dropZone.classList.remove('dropzone-active');
-
-            // Check drop location
-            const rect = els.dropZone.getBoundingClientRect();
-            if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                
-                // Drop successful (structurally) -> Evaluate
-                evaluateDrop(activeDrag);
-            }
-
-            activeDrag = null;
-        }
-
-        function setupDragAndDrop() {
-            // Prevent default touch behaviors on the pool to allow smooth dragging
-            els.draggablePool.addEventListener('touchmove', (e) => {
-                if(activeDrag) e.preventDefault();
-            }, { passive: false });
-        }
-
-
-        function evaluateDrop(droppedItem) {
-            els.draggablePool.style.pointerEvents = 'none'; // Lock pool
-            
-            const selectedName = droppedItem.dataset.name;
-            const isCorrect = selectedName === state.questionData.correctR_name;
-
-            // Visual feedback on dropzone
-            els.backboneCanvas.classList.add('opacity-30'); // Dim backbone
-            els.dropSuccessOverlay.classList.remove('hidden');
-            els.dropSuccessOverlay.innerHTML = '';
-            
-            // Copy the dropped canvas to overlay
-            const droppedCanvas = droppedItem.querySelector('canvas');
-            const displayCanvas = document.createElement('canvas');
-            displayCanvas.width = droppedCanvas.width;
-            displayCanvas.height = droppedCanvas.height;
-            displayCanvas.className = "max-w-full max-h-full object-contain"; // Ensure it fits the dropzone bounds cleanly
-            displayCanvas.getContext('2d').drawImage(droppedCanvas, 0, 0);
-            els.dropSuccessOverlay.appendChild(displayCanvas);
-
-            showFeedback(isCorrect, isCorrect ? "Structure Assembled Correctly!" : `Incorrect. You attached the R-group for ${selectedName}.`);
         }
 
         function handleAnswer(selectedOption, btnElement) {
@@ -707,13 +586,11 @@
             const isLastQuestion = state.currentIndex + 1 >= state.questionQueue.length;
             els.btnNext.textContent = isLastQuestion ? "View Final Assessment" : "Continue to Next";
             
-            // Scroll to next button on mobile
             setTimeout(() => els.btnNext.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
         }
 
         // Initialize application on DOM content load
         document.addEventListener('DOMContentLoaded', initApp);
-
     </script>
 </body>
 </html>
